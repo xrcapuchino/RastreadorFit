@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,11 +18,10 @@ import java.util.List;
 
 public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    // Constantes para tipos de vista
-    private static final int TIPO_HEADER = 0;   // Títulos de sección
-    private static final int TIPO_REGISTRO = 1; // Renglón de comida
+    private static final int TIPO_HEADER = 0;
+    private static final int TIPO_REGISTRO = 1;
 
-    private List<Object> listaItems; // Lista que mezcla Strings (títulos) y RegistroComida
+    private List<Object> listaItems;
 
     public RegistroComidaAdapter(List<Object> listaItems) {
         this.listaItems = listaItems;
@@ -39,11 +37,8 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     // --- VIEWHOLDERS ---
-
-    // 1. ViewHolder para la Comida
     public static class ComidaViewHolder extends RecyclerView.ViewHolder {
-        TextView tvAlimento, tvDetalles;
-        CheckBox cbSaludable;
+        TextView tvAlimento, tvDetalles, tvEsSaludable;
         ImageButton btnBorrar;
         ImageView ivIcono;
 
@@ -51,13 +46,12 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             super(itemView);
             tvAlimento = itemView.findViewById(R.id.tvAlimento);
             tvDetalles = itemView.findViewById(R.id.tvDetalles);
-            cbSaludable = itemView.findViewById(R.id.cbSaludable);
+            tvEsSaludable = itemView.findViewById(R.id.tvEsSaludable); // Nuevo texto informativo
             btnBorrar = itemView.findViewById(R.id.btnBorrar);
             ivIcono = itemView.findViewById(R.id.ivIcono);
         }
     }
 
-    // 2. ViewHolder para el Título
     public static class SeccionViewHolder extends RecyclerView.ViewHolder {
         TextView tvSeccion;
         public SeccionViewHolder(@NonNull View itemView) {
@@ -74,7 +68,7 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_seccion, parent, false);
             return new SeccionViewHolder(view);
         } else {
-            // Aquí usamos el nuevo layout item_registro_comida
+            // Usamos el nuevo layout sin checkbox
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_registro_comida, parent, false);
             return new ComidaViewHolder(view);
         }
@@ -84,7 +78,7 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-        // Animación simple de entrada
+        // Animación suave
         setAnimation(holder.itemView);
 
         if (getItemViewType(position) == TIPO_HEADER) {
@@ -92,58 +86,44 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             ((SeccionViewHolder) holder).tvSeccion.setText(titulo);
 
         } else {
-            // Convertimos el objeto genérico a RegistroComida
             RegistroComida registro = (RegistroComida) listaItems.get(position);
             ComidaViewHolder comidaHolder = (ComidaViewHolder) holder;
 
-            // Llenamos los textos
+            // 1. Datos principales
             comidaHolder.tvAlimento.setText(registro.getAlimento());
-            comidaHolder.tvDetalles.setText(registro.getMomento() + " - " + registro.getFecha());
+            comidaHolder.tvDetalles.setText(registro.getMomento() + " • " + registro.getCalorias() + " kcal");
 
-            // Asignamos icono según el momento del día
-            // NOTA: Asegúrate de tener estas imágenes en drawable o cámbialas por una genérica
+            // 2. Mostrar "Saludable" solo si es true (ya no es editable aquí)
+            if (registro.isEsSaludable()) {
+                comidaHolder.tvEsSaludable.setVisibility(View.VISIBLE);
+            } else {
+                comidaHolder.tvEsSaludable.setVisibility(View.GONE);
+            }
+
+            // 3. Imágenes (Asegúrate de tenerlas en res/drawable)
             switch (registro.getMomento()) {
                 case "Desayuno":
-                    // comidaHolder.ivIcono.setImageResource(R.drawable.ic_desayuno);
-                    // Usamos un icono default de Android por si no tienes imagen aun:
-                    comidaHolder.ivIcono.setImageResource(android.R.drawable.ic_menu_day);
+                    comidaHolder.ivIcono.setImageResource(R.drawable.ic_desayuno);
                     break;
                 case "Comida":
-                    // comidaHolder.ivIcono.setImageResource(R.drawable.ic_comida);
-                    comidaHolder.ivIcono.setImageResource(android.R.drawable.ic_menu_gallery);
+                    comidaHolder.ivIcono.setImageResource(R.drawable.ic_comida);
                     break;
                 case "Cena":
-                    // comidaHolder.ivIcono.setImageResource(R.drawable.ic_cena);
-                    comidaHolder.ivIcono.setImageResource(android.R.drawable.ic_menu_my_calendar);
-                    break;
-                case "Snack":
-                    // comidaHolder.ivIcono.setImageResource(R.drawable.ic_snack);
-                    comidaHolder.ivIcono.setImageResource(android.R.drawable.ic_menu_compass);
+                    comidaHolder.ivIcono.setImageResource(R.drawable.ic_cena);
                     break;
                 default:
-                    comidaHolder.ivIcono.setImageResource(android.R.drawable.ic_menu_help);
+                    comidaHolder.ivIcono.setImageResource(android.R.drawable.ic_menu_gallery);
                     break;
             }
 
-            // Lógica del Checkbox (Es Saludable)
-            comidaHolder.cbSaludable.setOnCheckedChangeListener(null);
-            comidaHolder.cbSaludable.setChecked(registro.isEsSaludable());
-
-            comidaHolder.cbSaludable.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                registro.setEsSaludable(isChecked);
-                BaseDatos db = new BaseDatos(buttonView.getContext());
-                db.actualizarRegistro(registro);
-            });
-
-            // Lógica del Botón Borrar
+            // 4. Botón Borrar
             comidaHolder.btnBorrar.setOnClickListener(v -> {
                 new AlertDialog.Builder(v.getContext())
-                        .setTitle("Eliminar Registro")
-                        .setMessage("¿Eliminar '" + registro.getAlimento() + "'?")
+                        .setTitle("Eliminar")
+                        .setMessage("¿Borrar " + registro.getAlimento() + "?")
                         .setPositiveButton("Sí", (dialog, which) -> {
                             BaseDatos db = new BaseDatos(v.getContext());
                             db.eliminarRegistro(registro.getId());
-                            // Borramos de la lista visual y notificamos
                             listaItems.remove(holder.getAdapterPosition());
                             notifyItemRemoved(holder.getAdapterPosition());
                             Toast.makeText(v.getContext(), "Eliminado", Toast.LENGTH_SHORT).show();
@@ -152,9 +132,9 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                         .show();
             });
 
-            // Click en todo el renglón para ver detalles (Esto abrirá el Fragment de la Parte 3)
+            // 5. Click para Editar Detalles
             comidaHolder.itemView.setOnClickListener(v -> {
-                DetalleComida fragment = new DetalleComida(); // Marcará rojo hasta que creemos esta clase
+                DetalleComida fragment = new DetalleComida();
                 Bundle args = new Bundle();
 
                 args.putInt("id", registro.getId());
@@ -162,14 +142,14 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 args.putString("notas", registro.getNotas());
                 args.putString("momento", registro.getMomento());
                 args.putString("fecha", registro.getFecha());
-                args.putString("calorias", registro.getNivelCalorico());
+                args.putInt("calorias", registro.getCalorias());
                 args.putBoolean("esSaludable", registro.isEsSaludable());
 
                 fragment.setArguments(args);
 
                 AppCompatActivity activity = (AppCompatActivity) v.getContext();
                 activity.getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.nav_host_fragment_content_main, fragment) // Ojo: Verifica el ID de tu contenedor en activity_main
+                        .replace(R.id.nav_host_fragment_content_main, fragment)
                         .addToBackStack(null)
                         .commit();
             });
@@ -182,7 +162,7 @@ public class RegistroComidaAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     private void setAnimation(View viewToAnimate) {
-        android.animation.ObjectAnimator animatorY = android.animation.ObjectAnimator.ofFloat(viewToAnimate, "translationY", 100f, 0f);
+        android.animation.ObjectAnimator animatorY = android.animation.ObjectAnimator.ofFloat(viewToAnimate, "translationY", 50f, 0f);
         animatorY.setDuration(300);
         animatorY.start();
     }

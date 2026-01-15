@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="#F5F5F5">
+    android:background="#FAFAFA">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registrar Alimento"
+            android:text="Registrar Comida"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="#2E7D32"
@@ -24,40 +24,65 @@
             android:id="@+id/etAlimento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="¿Qué comiste? (ej. Avena)"
+            android:hint="¿Qué comiste?"
             android:minHeight="48dp"
-            android:background="@android:drawable/edit_text"
             android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/etNotas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Notas (ej. Sin azúcar)"
+            android:hint="Notas opcionales"
             android:minHeight="48dp"
-            android:background="@android:drawable/edit_text"
             android:layout_marginBottom="12dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Momento del día:"
-            android:textStyle="bold"/>
-        <Spinner
-            android:id="@+id/spMomento"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
+
+        <RadioGroup
+            android:id="@+id/rgMomento"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <RadioButton
+                android:id="@+id/rbDesayuno"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Desayuno"
+                android:layout_weight="1"/>
+            <RadioButton
+                android:id="@+id/rbComida"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Comida"
+                android:layout_weight="1"/>
+            <RadioButton
+                android:id="@+id/rbCena"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cena"
+                android:layout_weight="1"/>
+        </RadioGroup>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nivel Calórico:"
+            android:text="Cantidad de Calorías (kcal):"
             android:textStyle="bold"/>
-        <Spinner
-            android:id="@+id/spCalorias"
+
+        <EditText
+            android:id="@+id/etCalorias"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Ej. 450"
+            android:minHeight="48dp"
             android:layout_marginBottom="12dp"/>
 
         <Button
@@ -65,23 +90,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Seleccionar Fecha"
-            android:backgroundTint="#81C784"
-            android:layout_marginBottom="8dp"/>
+            android:backgroundTint="#81C784"/>
         <TextView
             android:id="@+id/tvFechaSeleccionada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Fecha: Hoy"
             android:gravity="center"
-            android:textSize="16sp"
             android:layout_marginBottom="12dp"/>
 
         <CheckBox
             android:id="@+id/cbEsSaludable"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="¿Fue una opción saludable?"
-            android:textSize="16sp"
+            android:text="¿Fue saludable?"
             android:layout_marginBottom="20dp"/>
 
         <Button
@@ -89,9 +111,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="GUARDAR REGISTRO"
-            android:backgroundTint="#2E7D32"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"/>
+            android:backgroundTint="#2E7D32"/>
 
     </LinearLayout>
 </ScrollView>

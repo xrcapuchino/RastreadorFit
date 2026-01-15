@@ -5,28 +5,21 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import com.example.rastreadorfit.BaseDatos;
-import com.example.rastreadorfit.R;
-import com.example.rastreadorfit.RegistroComida;
-
 import java.util.Calendar;
 
 public class NuevaComida extends Fragment {
 
-    private EditText etAlimento, etNotas;
-    private Spinner spMomento, spCalorias;
+    private EditText etAlimento, etNotas, etCalorias;
+    private RadioGroup rgMomento; // Usamos RadioGroup en vez de Spinner
     private CheckBox cbEsSaludable;
     private TextView tvFechaSeleccionada;
     private Button btnFecha, btnGuardar;
@@ -37,20 +30,16 @@ public class NuevaComida extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_nueva_comida, container, false);
 
-        // 1. Encontrar Vistas
         etAlimento = view.findViewById(R.id.etAlimento);
         etNotas = view.findViewById(R.id.etNotas);
-        spMomento = view.findViewById(R.id.spMomento);
-        spCalorias = view.findViewById(R.id.spCalorias);
+        etCalorias = view.findViewById(R.id.etCalorias); // Nuevo campo
+        rgMomento = view.findViewById(R.id.rgMomento);   // Nuevo RadioGroup
         cbEsSaludable = view.findViewById(R.id.cbEsSaludable);
         tvFechaSeleccionada = view.findViewById(R.id.tvFechaSeleccionada);
         btnFecha = view.findViewById(R.id.btnFecha);
         btnGuardar = view.findViewById(R.id.btnGuardar);
 
-        // 2. Configurar Spinners (Listas desplegables)
-        configurarSpinners();
-
-        // 3. Fecha por defecto (Hoy)
+        // Fecha por defecto
         final Calendar c = Calendar.getInstance();
         int year = c.get(Calendar.YEAR);
         int month = c.get(Calendar.MONTH);
@@ -58,61 +47,43 @@ public class NuevaComida extends Fragment {
         fechaGuardada = day + "/" + (month + 1) + "/" + year;
         tvFechaSeleccionada.setText("Fecha: " + fechaGuardada);
 
-        // 4. Selector de Fecha
         btnFecha.setOnClickListener(v -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(getContext(),
+            DatePickerDialog dpd = new DatePickerDialog(getContext(),
                     (view1, year1, monthOfYear, dayOfMonth) -> {
                         fechaGuardada = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year1;
                         tvFechaSeleccionada.setText("Fecha: " + fechaGuardada);
                     }, year, month, day);
-            datePickerDialog.show();
+            dpd.show();
         });
 
-        // 5. Guardar en BD
         btnGuardar.setOnClickListener(v -> guardarRegistro());
 
         return view;
     }
 
-    private void configurarSpinners() {
-        // Opciones para Momento
-        String[] momentos = {"Desayuno", "Comida", "Cena", "Snack"};
-        ArrayAdapter<String> adapterMomento = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, momentos);
-        adapterMomento.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spMomento.setAdapter(adapterMomento);
-
-        // Opciones para Calorías
-        String[] calorias = {"Bajo", "Medio", "Alto"};
-        ArrayAdapter<String> adapterCalorias = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, calorias);
-        adapterCalorias.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spCalorias.setAdapter(adapterCalorias);
-    }
-
     private void guardarRegistro() {
         String alimento = etAlimento.getText().toString();
-        String notas = etNotas.getText().toString();
-        String momento = spMomento.getSelectedItem().toString();
-        String calorias = spCalorias.getSelectedItem().toString();
-        boolean esSaludable = cbEsSaludable.isChecked();
+        String caloriasStr = etCalorias.getText().toString();
 
-        if (alimento.isEmpty()) {
-            Toast.makeText(getContext(), "Escribe el nombre del alimento", Toast.LENGTH_SHORT).show();
+        // Validar que se seleccionó un momento
+        int selectedId = rgMomento.getCheckedRadioButtonId();
+        String momento = "Snack"; // Valor por defecto
+        if (selectedId == R.id.rbDesayuno) momento = "Desayuno";
+        else if (selectedId == R.id.rbComida) momento = "Comida";
+        else if (selectedId == R.id.rbCena) momento = "Cena";
+
+        if (alimento.isEmpty() || caloriasStr.isEmpty()) {
+            Toast.makeText(getContext(), "Completa el alimento y las calorías", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Crear Objeto y Guardar
-        RegistroComida nuevoRegistro = new RegistroComida(alimento, notas, momento, calorias, fechaGuardada, esSaludable);
-        BaseDatos db = new BaseDatos(getContext());
-        long id = db.agregarRegistro(nuevoRegistro);
+        int calorias = Integer.parseInt(caloriasStr);
 
-        if (id > 0) {
-            Toast.makeText(getContext(), "¡Comida registrada!", Toast.LENGTH_SHORT).show();
-            // Limpiar campos
-            etAlimento.setText("");
-            etNotas.setText("");
-            cbEsSaludable.setChecked(false);
-        } else {
-            Toast.makeText(getContext(), "Error al guardar", Toast.LENGTH_SHORT).show();
-        }
+        RegistroComida nuevo = new RegistroComida(alimento, etNotas.getText().toString(), momento, calorias, fechaGuardada, cbEsSaludable.isChecked());
+        BaseDatos db = new BaseDatos(getContext());
+        db.agregarRegistro(nuevo);
+
+        Toast.makeText(getContext(), "¡Guardado!", Toast.LENGTH_SHORT).show();
+        getParentFragmentManager().popBackStack(); // Volver atrás
     }
 }

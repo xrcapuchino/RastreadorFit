@@ -1,8 +1,6 @@
-package com.example.rastreadorfit;
+package com.example.rastreadorfit; // <--- CORREGIDO
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -26,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         // 1. Configurar Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar); // Asegúrate de tener un Toolbar con id 'toolbar' en activity_main.xml
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // 2. Configurar Drawer (Menú Lateral)
@@ -40,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        // 3. Cargar fragmento inicial (Home) si es la primera vez
+        // 3. Cargar fragmento inicial (Home)
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_host_fragment_content_main, new Home())
@@ -60,18 +58,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_nueva) {
             selectedFragment = new NuevaComida();
         } else if (id == R.id.nav_info) {
-            selectedFragment = new Informacion(); // Asegúrate de tener la clase Informacion.java (aunque sea vacía)
+        // AHORA SÍ: Quitamos los comentarios
+        selectedFragment = new Informacion();
         } else if (id == R.id.nav_salir) {
-            // Lógica de cerrar sesión (puedes crear un fragmento o cerrar la activity)
             Toast.makeText(this, "Cerrando sesión...", Toast.LENGTH_SHORT).show();
-            finish(); // Cierra la App
+            finish();
         }
 
-        // Cambiar fragmento si se seleccionó uno
         if (selectedFragment != null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.nav_host_fragment_content_main, selectedFragment)
-                    .addToBackStack(null) // Para poder volver atrás con el botón físico
+                    .addToBackStack(null)
                     .commit();
         }
 
